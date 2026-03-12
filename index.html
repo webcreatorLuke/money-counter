@@ -261,6 +261,50 @@
     text-transform: uppercase;
     margin-bottom: 0.8rem;
   }
+
+  /* Amount selector */
+  .amount-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.3em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 0.7rem;
+  }
+
+  .amount-chips {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+  }
+
+  .chip {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 0.1em;
+    padding: 0.4rem 1rem;
+    border-radius: 3px;
+    border: 2px solid #2A2A3A;
+    background: var(--surface);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    user-select: none;
+  }
+
+  .chip:hover {
+    border-color: var(--gold-dark);
+    color: var(--gold);
+  }
+
+  .chip.active {
+    border-color: var(--gold);
+    background: rgba(255,215,0,0.12);
+    color: var(--gold);
+    text-shadow: 0 0 10px rgba(255,215,0,0.5);
+    box-shadow: 0 0 12px rgba(255,215,0,0.15);
+  }
 </style>
 </head>
 <body>
@@ -272,6 +316,16 @@
   <div class="my-money-card">
     <div class="my-money-label">Your Balance</div>
     <div class="my-money-amount" id="myMoney">$0</div>
+  </div>
+
+  <div class="amount-label">Choose Amount</div>
+  <div class="amount-chips">
+    <div class="chip active" data-val="1" onclick="selectAmount(1, this)">$1</div>
+    <div class="chip" data-val="5" onclick="selectAmount(5, this)">$5</div>
+    <div class="chip" data-val="10" onclick="selectAmount(10, this)">$10</div>
+    <div class="chip" data-val="50" onclick="selectAmount(50, this)">$50</div>
+    <div class="chip" data-val="100" onclick="selectAmount(100, this)">$100</div>
+    <div class="chip" data-val="500" onclick="selectAmount(500, this)">$500</div>
   </div>
 
   <div class="btn-wrap">
@@ -299,7 +353,16 @@
 <script>
   // --- Local state ---
   let myMoney = parseInt(localStorage.getItem('myMoney') || '0');
+  let selectedAmount = 1;
   updateMyMoneyDisplay();
+
+  // --- Amount selector ---
+  function selectAmount(val, el) {
+    selectedAmount = val;
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('buyBtn').textContent = '💰 BUY +$' + val.toLocaleString();
+  }
 
   // --- Shared state via window.storage ---
   async function getShared() {
@@ -329,8 +392,10 @@
 
   // --- Click handler ---
   async function handleBuy(e) {
+    const amt = selectedAmount;
+
     // My money
-    myMoney += 1;
+    myMoney += amt;
     localStorage.setItem('myMoney', myMoney);
     updateMyMoneyDisplay();
 
@@ -341,15 +406,15 @@
     el.classList.add('bump');
     setTimeout(() => el.classList.remove('bump'), 150);
 
-    // Floating +$1
-    spawnFloat(e.clientX, e.clientY);
+    // Floating +$X
+    spawnFloat(e.clientX, e.clientY, amt);
 
     // Ripple on button
     addRipple(e);
 
     // Global stats
     const data = await getShared();
-    data.total += 1;
+    data.total += amt;
     data.clicks += 1;
     await setShared(data);
     refreshGlobal();
@@ -359,12 +424,15 @@
     document.getElementById('myMoney').textContent = '$' + myMoney.toLocaleString();
   }
 
-  function spawnFloat(x, y) {
+  function spawnFloat(x, y, amt) {
     const el = document.createElement('div');
     el.className = 'float-text';
-    el.textContent = '+$1';
+    el.textContent = '+$' + amt.toLocaleString();
     el.style.left = (x - 20 + (Math.random() * 30 - 15)) + 'px';
     el.style.top = (y - 20) + 'px';
+    // Scale size based on amount
+    const scale = amt >= 100 ? 2.2 : amt >= 10 ? 1.5 : 1;
+    el.style.fontSize = (1.6 * scale) + 'rem';
     document.body.appendChild(el);
     el.addEventListener('animationend', () => el.remove());
   }
