@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>💰 Money Clicker</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #FFD700;
+    --gold-dark: #B8960C;
+    --green: #00FF88;
+    --green-dark: #00CC6A;
+    --bg: #0A0A0F;
+    --surface: #12121A;
+    --surface2: #1A1A26;
+    --text: #F0F0F0;
+    --muted: #666680;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Grid bg */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,215,0,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,215,0,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+
+  /* Vignette */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.7) 100%);
+    pointer-events: none;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    width: 100%;
+    max-width: 560px;
+    padding: 2rem;
+  }
+
+  .title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(3rem, 10vw, 5.5rem);
+    letter-spacing: 0.08em;
+    color: var(--gold);
+    text-shadow:
+      0 0 20px rgba(255,215,0,0.5),
+      0 0 60px rgba(255,215,0,0.2),
+      3px 3px 0 var(--gold-dark);
+    line-height: 1;
+    margin-bottom: 0.2em;
+  }
+
+  .subtitle {
+    font-size: 0.65rem;
+    letter-spacing: 0.3em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 3rem;
+  }
+
+  /* My Money */
+  .my-money-card {
+    background: var(--surface2);
+    border: 2px solid var(--gold-dark);
+    border-radius: 4px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .my-money-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+
+  .my-money-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.3em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+  }
+
+  .my-money-amount {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2.5rem, 8vw, 4rem);
+    color: var(--gold);
+    text-shadow: 0 0 30px rgba(255,215,0,0.4);
+    letter-spacing: 0.05em;
+    transition: transform 0.1s ease;
+  }
+
+  .my-money-amount.bump {
+    transform: scale(1.08);
+  }
+
+  /* Buy Button */
+  .btn-wrap {
+    margin-bottom: 2.5rem;
+    position: relative;
+    display: inline-block;
+  }
+
+  .buy-btn {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    letter-spacing: 0.15em;
+    color: var(--bg);
+    background: var(--gold);
+    border: none;
+    padding: 1rem 3.5rem;
+    cursor: pointer;
+    border-radius: 4px;
+    position: relative;
+    transition: transform 0.08s ease, box-shadow 0.08s ease;
+    box-shadow:
+      0 6px 0 var(--gold-dark),
+      0 8px 20px rgba(255,215,0,0.3);
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .buy-btn:hover {
+    box-shadow:
+      0 6px 0 var(--gold-dark),
+      0 12px 30px rgba(255,215,0,0.5);
+  }
+
+  .buy-btn:active {
+    transform: translateY(4px);
+    box-shadow:
+      0 2px 0 var(--gold-dark),
+      0 4px 10px rgba(255,215,0,0.2);
+  }
+
+  /* Global stats */
+  .stats-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid #2A2A3A;
+    border-radius: 4px;
+    padding: 1rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--green), transparent);
+  }
+
+  .stat-label {
+    font-size: 0.55rem;
+    letter-spacing: 0.25em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 0.3rem;
+  }
+
+  .stat-value {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem;
+    color: var(--green);
+    text-shadow: 0 0 15px rgba(0,255,136,0.3);
+    letter-spacing: 0.05em;
+  }
+
+  /* Floating +$1 animation */
+  .float-text {
+    position: fixed;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    color: var(--gold);
+    text-shadow: 0 0 10px rgba(255,215,0,0.8);
+    pointer-events: none;
+    z-index: 100;
+    animation: floatUp 0.9s ease-out forwards;
+    letter-spacing: 0.05em;
+  }
+
+  @keyframes floatUp {
+    0%   { opacity: 1; transform: translateY(0) scale(1); }
+    60%  { opacity: 1; transform: translateY(-60px) scale(1.2); }
+    100% { opacity: 0; transform: translateY(-110px) scale(0.9); }
+  }
+
+  /* Ripple on button click */
+  .ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.3);
+    transform: scale(0);
+    animation: ripple 0.5s linear;
+    pointer-events: none;
+  }
+
+  @keyframes ripple {
+    to { transform: scale(4); opacity: 0; }
+  }
+
+  /* Live dot */
+  .live-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background: var(--green);
+    border-radius: 50%;
+    margin-right: 6px;
+    animation: pulse 1.5s infinite;
+    vertical-align: middle;
+    box-shadow: 0 0 8px var(--green);
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .live-label {
+    font-size: 0.55rem;
+    letter-spacing: 0.25em;
+    color: var(--green);
+    text-transform: uppercase;
+    margin-bottom: 0.8rem;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="title">MONEY<br>CLICKER</div>
+  <div class="subtitle">click. earn. flex.</div>
+
+  <div class="my-money-card">
+    <div class="my-money-label">Your Balance</div>
+    <div class="my-money-amount" id="myMoney">$0</div>
+  </div>
+
+  <div class="btn-wrap">
+    <button class="buy-btn" id="buyBtn" onclick="handleBuy(event)">
+      💰 BUY +$1
+    </button>
+  </div>
+
+  <div class="live-label">
+    <span class="live-dot"></span>global stats — shared with everyone
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Total Earned</div>
+      <div class="stat-value" id="totalMoney">$0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total Clicks</div>
+      <div class="stat-value" id="totalClicks">0</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // --- Local state ---
+  let myMoney = parseInt(localStorage.getItem('myMoney') || '0');
+  updateMyMoneyDisplay();
+
+  // --- Shared state via window.storage ---
+  async function getShared() {
+    try {
+      const res = await window.storage.get('global_stats', true);
+      return res ? JSON.parse(res.value) : { total: 0, clicks: 0 };
+    } catch {
+      return { total: 0, clicks: 0 };
+    }
+  }
+
+  async function setShared(data) {
+    try {
+      await window.storage.set('global_stats', JSON.stringify(data), true);
+    } catch {}
+  }
+
+  async function refreshGlobal() {
+    const data = await getShared();
+    document.getElementById('totalMoney').textContent = '$' + data.total.toLocaleString();
+    document.getElementById('totalClicks').textContent = data.clicks.toLocaleString();
+  }
+
+  // Poll every 3s for live updates
+  refreshGlobal();
+  setInterval(refreshGlobal, 3000);
+
+  // --- Click handler ---
+  async function handleBuy(e) {
+    // My money
+    myMoney += 1;
+    localStorage.setItem('myMoney', myMoney);
+    updateMyMoneyDisplay();
+
+    // Bump animation
+    const el = document.getElementById('myMoney');
+    el.classList.remove('bump');
+    void el.offsetWidth;
+    el.classList.add('bump');
+    setTimeout(() => el.classList.remove('bump'), 150);
+
+    // Floating +$1
+    spawnFloat(e.clientX, e.clientY);
+
+    // Ripple on button
+    addRipple(e);
+
+    // Global stats
+    const data = await getShared();
+    data.total += 1;
+    data.clicks += 1;
+    await setShared(data);
+    refreshGlobal();
+  }
+
+  function updateMyMoneyDisplay() {
+    document.getElementById('myMoney').textContent = '$' + myMoney.toLocaleString();
+  }
+
+  function spawnFloat(x, y) {
+    const el = document.createElement('div');
+    el.className = 'float-text';
+    el.textContent = '+$1';
+    el.style.left = (x - 20 + (Math.random() * 30 - 15)) + 'px';
+    el.style.top = (y - 20) + 'px';
+    document.body.appendChild(el);
+    el.addEventListener('animationend', () => el.remove());
+  }
+
+  function addRipple(e) {
+    const btn = document.getElementById('buyBtn');
+    const rect = btn.getBoundingClientRect();
+    const r = document.createElement('span');
+    r.className = 'ripple';
+    const size = Math.max(rect.width, rect.height);
+    r.style.width = r.style.height = size + 'px';
+    r.style.left = (e.clientX - rect.left - size / 2) + 'px';
+    r.style.top = (e.clientY - rect.top - size / 2) + 'px';
+    btn.appendChild(r);
+    r.addEventListener('animationend', () => r.remove());
+  }
+</script>
+</body>
+</html>
