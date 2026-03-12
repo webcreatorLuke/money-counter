@@ -305,6 +305,65 @@
     text-shadow: 0 0 10px rgba(255,215,0,0.5);
     box-shadow: 0 0 12px rgba(255,215,0,0.15);
   }
+
+  /* Custom amount input */
+  .custom-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin-bottom: 1.5rem;
+    position: relative;
+  }
+
+  .custom-dollar {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    color: var(--muted);
+    background: var(--surface);
+    border: 2px solid #2A2A3A;
+    border-right: none;
+    border-radius: 3px 0 0 3px;
+    padding: 0.45rem 0.6rem 0.45rem 0.8rem;
+    line-height: 1;
+    transition: border-color 0.15s, color 0.15s;
+  }
+
+  .custom-input {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    letter-spacing: 0.08em;
+    color: var(--text);
+    background: var(--surface);
+    border: 2px solid #2A2A3A;
+    border-left: none;
+    border-radius: 0 3px 3px 0;
+    padding: 0.45rem 0.8rem;
+    width: 180px;
+    outline: none;
+    transition: border-color 0.15s;
+    -moz-appearance: textfield;
+  }
+
+  .custom-input::-webkit-outer-spin-button,
+  .custom-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+  .custom-input::placeholder { color: #3A3A50; }
+
+  .custom-input:focus {
+    border-color: var(--gold);
+  }
+
+  .custom-wrap:focus-within .custom-dollar {
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+
+  .custom-input.active-custom {
+    border-color: var(--gold);
+    color: var(--gold);
+    text-shadow: 0 0 8px rgba(255,215,0,0.4);
+  }
 </style>
 </head>
 <body>
@@ -326,6 +385,11 @@
     <div class="chip" data-val="50" onclick="selectAmount(50, this)">$50</div>
     <div class="chip" data-val="100" onclick="selectAmount(100, this)">$100</div>
     <div class="chip" data-val="500" onclick="selectAmount(500, this)">$500</div>
+  </div>
+
+  <div class="custom-wrap">
+    <span class="custom-dollar">$</span>
+    <input type="number" id="customInput" class="custom-input" placeholder="Custom amount" min="1" oninput="onCustomInput(this)" />
   </div>
 
   <div class="btn-wrap">
@@ -361,7 +425,21 @@
     selectedAmount = val;
     document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
     el.classList.add('active');
+    document.getElementById('customInput').value = '';
+    document.getElementById('customInput').classList.remove('active-custom');
     document.getElementById('buyBtn').textContent = '💰 BUY +$' + val.toLocaleString();
+  }
+
+  function onCustomInput(input) {
+    const val = parseInt(input.value);
+    if (val && val > 0) {
+      selectedAmount = val;
+      document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+      input.classList.add('active-custom');
+      document.getElementById('buyBtn').textContent = '💰 BUY +$' + val.toLocaleString();
+    } else {
+      input.classList.remove('active-custom');
+    }
   }
 
   // --- Shared state via window.storage ---
